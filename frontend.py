@@ -138,7 +138,7 @@ with st.sidebar:
     st.subheader("Backend Settings")
 
     # Defaults without requiring secrets.toml
-    default_base = "http://localhost:5000"
+    default_base = "http://127.0.0.1:5000"
     try:
         default_base = st.secrets.get("BACKEND_BASE_URL", default_base)
     except Exception:

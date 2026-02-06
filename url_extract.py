@@ -13,18 +13,18 @@ def having_ip_address(url):
     if parsed_url.hostname:
         try:
             ipaddress.ip_address(parsed_url.hostname)
-            return 1
-        except ValueError:
             return -1
-    return -1
+        except ValueError:
+            return 1
+    return 1
 
 def url_length(url):
     if len(url) < 54:
-        return -1
+        return 1
     elif 54 <= len(url) <= 75:
         return 0
     else:
-        return 1
+        return -1
 
 SHORTENING_SERVICES = {
     "bit.ly", "tinyurl.com", "goo.gl", "t.co", "ow.ly",
@@ -40,10 +40,10 @@ def shortening_service(url):
     # remove port if present
     hostname = hostname.split(":")[0]
 
-    return 1 if hostname in SHORTENING_SERVICES else -1
-    
+    return -1 if hostname in SHORTENING_SERVICES else 1
+
 def having_at_symbol(url):
-    return 1 if "@" in url else -1
+    return -1 if "@" in url else 1
 
 def double_slash_redirecting(url):
     # Split off protocol
@@ -52,23 +52,23 @@ def double_slash_redirecting(url):
     else:
         remainder = url
 
-    return 1 if "//" in remainder else -1
+    return -1 if "//" in remainder else 1
 
 def prefix_suffix(url):
     parsed_url = urlparse(url)
     domain = parsed_url.netloc
-    return 1 if '-' in domain else -1
+    return -1 if '-' in domain else 1
 
 def having_sub_domain(url):
     parsed_url = urlparse(url)
     domain = parsed_url.netloc
     cnt = domain.count('.')
     if cnt < 3:
-        return -1
+        return 1
     elif cnt == 3:
         return 0
     else:
-        return 1
+        return -1
 
 def port(url):
     try:
@@ -163,9 +163,9 @@ def get_feature_array(url):
     features.append(double_slash_redirecting(url))
     features.append(prefix_suffix(url))
     features.append(having_sub_domain(url))
-    features.append(port(url))
-    features.append(https_token(url))
-    features.append(age_of_domain(url))
-    features.append(dnsrecord(url))
-    features.append(domain_registration_length(url))
+    # features.append(port(url))
+    # features.append(https_token(url))
+    # features.append(age_of_domain(url))
+    # features.append(dnsrecord(url))
+    # features.append(domain_registration_length(url))
     return features
