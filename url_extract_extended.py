@@ -13,6 +13,14 @@ def DomainLength(url):
     domain = urlparse(url).hostname
     return len(domain)
 
+#helper
+def is_ip(hostname):
+    try:
+        ipaddress.ip_address(hostname)
+        return True
+    except ValueError:
+        return False
+    
 def IsDomainIP(url):
     domain = urlparse(url).hostname
     if is_ip(domain) == True:
