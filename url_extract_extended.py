@@ -1,10 +1,12 @@
 import re
 from urllib.parse import urlparse
+import numpy as np
 import whois
 import ipaddress
 from datetime import datetime
 import dns.resolver
 import tldextract
+from sklearn.preprocessing import LabelEncoder
 
 def URLLength(url):
     return len(url)
@@ -29,12 +31,12 @@ def IsDomainIP(url):
         return 0
 
 def TLD(url):
-    extracted = tldextract.extract(url)
-    return extracted.suffix
+    extract = url.split('.')[-1]
+    return extract
 
 def TLDLength(url):
-    extracted = tldextract.extract(url)
-    return len(extracted.suffix)
+    extract = url.split('.')[-1]
+    return len(extract)
 
 def NoOfSubDomain(url):
     extracted = tldextract.extract(url)
@@ -60,7 +62,7 @@ def NoOfQMarkInURL(url):
     return url.count('?')
 
 def NoOfAmpersandInURL(url):
-    return url.count('&')
+    return url.count('%')
 
 def NoOfOtherSpecialCharsInURL(url):
     return sum(not c.isalnum() for c in url)
@@ -72,24 +74,22 @@ def IsHTTPS(url):
     scheme = urlparse(url).scheme
     return 1 if scheme == 'https' else 0
 
-def get_feature_array(url):
+def get_feature_array(url, le: LabelEncoder):
     # url_features = ['URLLength', 'DomainLength', 'IsDomainIP', 'TLD', 'TLDLength', 'NoOfSubDomain',
     #             'NoOfLettersInURL', 'LetterRatioInURL', 'NoOfDegitsInURL', 'DegitRatioInURL', 'NoOfEqualsInURL',
     #             'NoOfQMarkInURL', 'NoOfAmpersandInURL', 'NoOfOtherSpecialCharsInURL', 'SpacialCharRatioInURL']
     features = []
-    features.append(URLLength(url))
+    features.append(URLLength(url)) # Problem
     features.append(DomainLength(url))
     features.append(IsDomainIP(url))
-    features.append(TLD(url))
+    tld = TLD(url)
+    features.append(le.transform([tld])[0])
     features.append(TLDLength(url))
     features.append(NoOfSubDomain(url))
-    features.append(NoOfLettersInURL(url))
-    features.append(LetterRatioInURL(url))
+    features.append(NoOfLettersInURL(url)) # Problem
     features.append(NoOfDegitsInURL(url))
-    features.append(DegitRatioInURL(url))
     features.append(NoOfEqualsInURL(url))
     features.append(NoOfQMarkInURL(url))
     features.append(NoOfAmpersandInURL(url))
     features.append(NoOfOtherSpecialCharsInURL(url))
-    features.append(SpacialCharRatioInURL(url))
     return features
