@@ -1,11 +1,12 @@
 from flask import Flask, jsonify, request
 from sklearn.ensemble import RandomForestClassifier
 import pickle
-from url_extract import get_feature_array
+# from url_extract import get_feature_array
+from url_extract_extended import get_feature_array
 
 app = Flask(__name__)
 
-model = pickle.load(open("url_features_model.pkl", "rb"))
+model = pickle.load(open("phiuslil.random_forest_model.pkl", "rb"))
 
 
 @app.post("/predict")
@@ -14,8 +15,8 @@ def predict():
     url = data.get("url", "")
     features = get_feature_array(url)
     prediction = model.predict([features])
-    # prediction is -1 for phishing and 1 for legit
-    label = "phishing" if prediction[0] == -1 else "legit"
+    # prediction is 0 for phishing and 1 for legit
+    label = "phishing" if prediction[0] == 0 else "legit"
     return jsonify({"label": label})
 
 @app.get("/health")

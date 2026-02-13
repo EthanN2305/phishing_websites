@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
-#functions to assign values for URL features
 import re
 from urllib.parse import urlparse
 import whois
@@ -71,3 +64,24 @@ def IsHTTPS(url):
     scheme = urlparse(url).scheme
     return 1 if scheme == 'https' else 0
 
+def get_feature_array(url):
+    # url_features = ['URLLength', 'DomainLength', 'IsDomainIP', 'TLD', 'TLDLength', 'NoOfSubDomain',
+    #             'NoOfLettersInURL', 'LetterRatioInURL', 'NoOfDegitsInURL', 'DegitRatioInURL', 'NoOfEqualsInURL',
+    #             'NoOfQMarkInURL', 'NoOfAmpersandInURL', 'NoOfOtherSpecialCharsInURL', 'SpacialCharRatioInURL']
+    features = []
+    features.append(URLLength(url))
+    features.append(DomainLength(url))
+    features.append(IsDomainIP(url))
+    features.append(TLD(url))
+    features.append(TLDLength(url))
+    features.append(NoOfSubDomain(url))
+    features.append(NoOfLettersInURL(url))
+    features.append(LetterRatioInURL(url))
+    features.append(NoOfDegitsInURL(url))
+    features.append(DegitRatioInURL(url))
+    features.append(NoOfEqualsInURL(url))
+    features.append(NoOfQMarkInURL(url))
+    features.append(NoOfAmpersandInURL(url))
+    features.append(NoOfOtherSpecialCharsInURL(url))
+    features.append(SpacialCharRatioInURL(url))
+    return features
