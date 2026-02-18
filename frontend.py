@@ -97,9 +97,10 @@ st.markdown(
         font-size: 0.78rem;
         border: 1px solid rgba(16,16,16,0.18);
         background: rgba(16,16,16,0.03);
+        color: #000000 !important;
       }
-      .pill-red { background: rgba(220, 38, 38, 0.10); border-color: rgba(220, 38, 38, 0.30); }
-      .pill-green { background: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.30); }
+      .pill-red { background: rgba(220, 38, 38, 0.10); border-color: rgba(220, 38, 38, 0.30); color: #000000 !important; }
+      .pill-green { background: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.30); color: #000000 !important;}
 
       .card-title {
         margin-top: 0.7rem;
