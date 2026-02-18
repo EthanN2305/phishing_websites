@@ -172,7 +172,7 @@ def looks_like_url(u: str) -> bool:
 # ---------------- Main UI ----------------
 st.markdown("<div class='brand'>ReelDefense 🎣</div>", unsafe_allow_html=True)
 st.markdown(
-    "<div class='tagline'>Reel in phishing before it reels you in</div>",
+    "<div class='tagline'>Reel in risky links before they hook you!</div>",
     unsafe_allow_html=True,
 )
 st.markdown("<div class='accent-line'></div>", unsafe_allow_html=True)
