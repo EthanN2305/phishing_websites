@@ -6,7 +6,8 @@ from url_extract_extended import get_feature_array
 
 app = Flask(__name__)
 
-model = pickle.load(open("phiuslil.random_forest_model.pkl", "rb"))
+# Use the improved model with overfitting fixes
+model = pickle.load(open("random_forest_model.pkl", "rb"))
 le = pickle.load(open("label_encoder.pkl", "rb"))
 
 
@@ -17,8 +18,8 @@ def predict():
     features = get_feature_array(url, le)
     print(features)
     prediction = model.predict([features])
-    # prediction is 0 for phishing and 1 for legit
-    label = "phishing" if prediction[0] == 0 else "legit"
+    # prediction is -1 for phishing and 1 for legitimate
+    label = "phishing" if prediction[0] == -1 else "legitimate"
     return jsonify({"label": label})
 
 
