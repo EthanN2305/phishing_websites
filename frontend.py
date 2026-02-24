@@ -211,7 +211,7 @@ if scan:
             message = data.get("message", None)
 
             is_phish = label in ("phishing", "phish", "malicious", "bad")
-            is_legit = label in ("legit", "benign", "safe", "not phishing", "clean")
+            is_legit = label in ("legitimate", "legit", "benign", "safe", "not phishing", "clean")
 
             if is_phish:
                 pill = "<span class='pill pill-red'>⚠️ Phishing</span>"
