@@ -212,6 +212,7 @@ if scan:
 
             is_phish = label in ("phishing", "phish", "malicious", "bad")
             is_legit = label in ("legitimate", "legit", "benign", "safe", "not phishing", "clean")
+            is_uncertain = label in ("uncertain", "unclear", "unknown", "suspicious")
 
             if is_phish:
                 pill = "<span class='pill pill-red'>⚠️ Phishing</span>"
@@ -221,6 +222,10 @@ if scan:
                 pill = "<span class='pill pill-green'>✅ Legit</span>"
                 title = "Looks clean — no hook detected."
                 sub = "Still stay cautious with unexpected links."
+            elif is_uncertain:
+                pill = "<span class='pill'>⚠️ Uncertain</span>"
+                title = "Suspicious patterns detected."
+                sub = "Proceed with caution."
             else:
                 pill = "<span class='pill'>ℹ️ Unknown</span>"
                 title = "Couldn’t classify confidently."

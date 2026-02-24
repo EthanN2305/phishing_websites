@@ -15,20 +15,32 @@ def predict():
     url = data.get("url", "")
     features = get_feature_array(url)
     print(f"Features for {url}: {features}")
+    
     prediction = model.predict([features])
-    print(f"Raw prediction: {prediction[0]}")
+    proba = model.predict_proba([features])[0]
     
-    # Handle both -1/1 and 0/1 label formats
-    pred_val = prediction[0]
-    if pred_val == -1 or pred_val == 0:
+    print(f"Raw prediction: {prediction[0]}, Probabilities: phishing={proba[0]:.4f}, legit={proba[1]:.4f}")
+    
+    # Use probability-based decision with threshold
+    # proba[0] = prob of -1 (phishing), proba[1] = prob of 1 (legitimate)
+    phishing_prob = proba[0]
+    legit_prob = proba[1]
+    
+    # Apply threshold: if phishing probability > 5%, flag as phishing
+    # if legit probability > 95%, mark as legitimate
+    # otherwise, uncertain
+    if phishing_prob > 0.05:
         label = "phishing"
-    elif pred_val == 1:
+        confidence = phishing_prob
+    elif legit_prob > 0.95:
         label = "legitimate"
+        confidence = legit_prob
     else:
-        label = "unknown"
+        label = "uncertain"
+        confidence = max(phishing_prob, legit_prob)
     
-    print(f"Final label: {label}")
-    return jsonify({"label": label})
+    print(f"Final label: {label} (confidence={confidence:.4f})")
+    return jsonify({"label": label, "confidence": confidence})
 
 
 @app.get("/health")
