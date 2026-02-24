@@ -178,7 +178,7 @@ st.markdown(
 st.markdown("<div class='accent-line'></div>", unsafe_allow_html=True)
 
 url_input = st.text_input(
-    "",
+    "URL",
     placeholder="Paste a link (example.com or https://example.com)",
     label_visibility="collapsed",
 )
