@@ -163,9 +163,6 @@ def get_feature_array(url):
     features.append(double_slash_redirecting(url))
     features.append(prefix_suffix(url))
     features.append(having_sub_domain(url))
-    # features.append(port(url))
-    # features.append(https_token(url))
-    # features.append(age_of_domain(url))
-    # features.append(dnsrecord(url))
-    # features.append(domain_registration_length(url))
+    features.append(port(url))
+    features.append(https_token(url))
     return features
