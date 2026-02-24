@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from sklearn.ensemble import RandomForestClassifier
 import pickle
-from url_extract_full import get_feature_array
+from url_extract_full_fast import get_feature_array
 
 app = Flask(__name__)
 

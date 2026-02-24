@@ -92,16 +92,20 @@ def sslfinal_state(url):
     if not domain:
         return -1
     
+    # Skip SSL check if it's clearly not HTTPS
+    if not url.startswith('https://'):
+        return 1  # No HTTPS, suspicious
+    
     try:
         context = ssl.create_default_context()
-        with socket.create_connection((domain, 443), timeout=3) as sock:
+        with socket.create_connection((domain, 443), timeout=1) as sock:
             with context.wrap_socket(sock, server_hostname=domain) as ssock:
                 cert = ssock.getpeercert()
                 # Has valid SSL certificate
-                return 1
+                return -1  # HTTPS with valid cert, legitimate
     except (socket.error, ssl.SSLError, socket.timeout):
-        # No SSL or invalid certificate
-        return -1
+        # Has HTTPS but may have cert issues; still better than no HTTPS
+        return 0  # HTTPS present but cert issues - neutral
 
 def domain_registration_length(url):
     """Check domain registration length using WHOIS."""
@@ -148,8 +152,10 @@ def https_token(url):
     """Check HTTPS usage."""
     if url.startswith('https://'):
         return -1  # Uses HTTPS (legitimate)
-    else:
+    elif url.startswith('http://'):
         return 1   # No HTTPS (suspicious)
+    else:
+        return 0   # Unknown protocol (default to suspicious)
 
 def request_url(url):
     """Check if external URLs are requested from page."""
