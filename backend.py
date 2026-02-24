@@ -5,10 +5,13 @@ from url_extract import get_feature_array
 
 app = Flask(__name__)
 
-# Use the proven 7-feature model (fast and reliable)
-# The 30-feature model requires external APIs not available in production
-model = pickle.load(open("url_features_model.pkl", "rb"))
-print("✅ Loaded 7-feature model (fast, production-ready)")
+# Use the improved 7-feature model (better hyperparameters)
+try:
+    model = pickle.load(open("url_features_model_improved.pkl", "rb"))
+    print("✅ Loaded improved 7-feature model")
+except FileNotFoundError:
+    model = pickle.load(open("url_features_model.pkl", "rb"))
+    print("⚠️  Using original 7-feature model (improved version not found)")
 
 
 @app.post("/predict")
@@ -18,12 +21,14 @@ def predict():
     
     try:
         features = get_feature_array(url)
-        print(f"Features for {url}: {features}")
+        print(f"\n[SCAN] {url}")
+        print(f"  Features: {features}")
+        print(f"  Feature count: {len(features)}")
         
         prediction = model.predict([features])
         proba = model.predict_proba([features])[0]
         
-        print(f"Raw prediction: {prediction[0]}, Probabilities: phishing={proba[0]:.4f}, legit={proba[1]:.4f}")
+        print(f"  Prediction: {prediction[0]}, Proba: phishing={proba[0]:.4f}, legit={proba[1]:.4f}")
         
         # Use probability-based decision
         # proba[0] = prob of -1 (phishing), proba[1] = prob of 1 (legitimate)
@@ -45,11 +50,13 @@ def predict():
             label = "uncertain"
             confidence = max(phishing_prob, legit_prob)
         
-        print(f"Final label: {label} (confidence={confidence:.4f})")
+        print(f"  Result: {label.upper()} (confidence={confidence:.4f})")
+        print()
         return jsonify({"label": label, "confidence": confidence})
     
     except Exception as e:
-        print(f"❌ Prediction error: {str(e)}")
+        print(f"  ERROR: {str(e)}")
+        print()
         return jsonify({"error": str(e), "status": "error"}), 500
 
 
