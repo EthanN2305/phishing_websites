@@ -30,15 +30,18 @@ def predict():
         phishing_prob = proba[0]
         legit_prob = proba[1]
         
-        # For the 7-feature model, use conservative thresholds
-        # Only flag as phishing if model is quite confident
-        if phishing_prob > 0.75:
+        # For the 7-feature model, use aggressive thresholds for safety
+        # Require very high confidence for "legitimate", lower threshold for "phishing"
+        if phishing_prob > 0.60:
+            # Lean toward phishing
             label = "phishing"
             confidence = phishing_prob
-        elif legit_prob > 0.75:
+        elif legit_prob > 0.90:
+            # Only mark as legitimate if very confident
             label = "legitimate"
             confidence = legit_prob
         else:
+            # Default to uncertain (requires manual review)
             label = "uncertain"
             confidence = max(phishing_prob, legit_prob)
         
