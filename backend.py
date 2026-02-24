@@ -1,17 +1,14 @@
 from flask import Flask, jsonify, request
 from sklearn.ensemble import RandomForestClassifier
 import pickle
-from url_extract_full_fast import get_feature_array
+from url_extract import get_feature_array
 
 app = Flask(__name__)
 
-# Use the improved 30-feature model trained on phishing_websites.csv
-try:
-    model = pickle.load(open("random_forest_full_features.pkl", "rb"))
-    print("✅ Loaded improved 30-feature model")
-except FileNotFoundError:
-    print("⚠️  Improved model not found, falling back to 7-feature model")
-    model = pickle.load(open("url_features_model.pkl", "rb"))
+# Use the proven 7-feature model (fast and reliable)
+# The 30-feature model requires external APIs not available in production
+model = pickle.load(open("url_features_model.pkl", "rb"))
+print("✅ Loaded 7-feature model (fast, production-ready)")
 
 
 @app.post("/predict")
@@ -33,7 +30,7 @@ def predict():
         phishing_prob = proba[0]
         legit_prob = proba[1]
         
-        # For the improved 30-feature model, use stricter thresholds
+        # For the 7-feature model, use conservative thresholds
         # Only flag as phishing if model is quite confident
         if phishing_prob > 0.75:
             label = "phishing"
