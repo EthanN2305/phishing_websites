@@ -22,8 +22,12 @@ def predict():
     try:
         features = get_feature_array(url)
         print(f"\n[SCAN] {url}")
-        print(f"  Features: {features}")
-        print(f"  Feature count: {len(features)}")
+        print(f"  Feature values:")
+        feature_names = ["ip_address", "url_length", "shortening", "at_symbol", 
+                        "double_slash", "prefix_suffix", "sub_domain", "port", "https_token"]
+        for i, (name, val) in enumerate(zip(feature_names, features)):
+            print(f"    {i}: {name:20} = {val:2}")
+        print(f"  Total features: {len(features)}")
         
         prediction = model.predict([features])
         proba = model.predict_proba([features])[0]

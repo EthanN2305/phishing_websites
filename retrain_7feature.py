@@ -14,7 +14,8 @@ import pickle
 print("Loading phishing_websites.csv...")
 data = pd.read_csv('phishing_websites.csv')
 
-# The 9 fast features we can extract without external APIs
+# Use features that are already in the CSV (pre-calculated)
+# Focus on fast ones without external API dependencies
 feature_names = [
     'having_ip_address',
     'url_length', 
@@ -24,7 +25,12 @@ feature_names = [
     'prefix_suffix',
     'having_sub_domain',
     'port',
-    'https_token'
+    'https_token',
+    'abnormal_url',           # Detects suspicious patterns
+    'favicon',                # Favicon consistency
+    'request_url',            # External URL requests
+    'redirect',               # Redirect behavior
+    'links_in_tags',          # Link analysis
 ]
 
 X = data[feature_names]
