@@ -209,6 +209,8 @@ if scan:
             label = str(data.get("label", "")).lower()
             confidence = data.get("confidence", None)
             message = data.get("message", None)
+            redirect_chain = data.get("redirect_chain", None)
+            analyzed_url = data.get("analyzed_url", None)
 
             is_phish = label in ("phishing", "phish", "malicious", "bad")
             is_legit = label in ("legitimate", "legit", "benign", "safe", "not phishing", "clean")
@@ -241,6 +243,21 @@ if scan:
                 meta_line = f"<div class='meta'>{message}</div>"
             else:
                 meta_line = f"<div class='meta'>{conf_text}</div>" if conf_text else ""
+            
+            # Add redirect chain info if available
+            redirect_html = ""
+            if redirect_chain and len(redirect_chain) > 1:
+                redirect_html = "<div class='meta' style='background-color: #f5f5f5; padding: 10px; margin-top: 8px; border-radius: 4px;'>"
+                redirect_html += f"<strong>Redirect Chain ({len(redirect_chain)} URLs):</strong><br>"
+                for i, redir_url in enumerate(redirect_chain):
+                    marker = "→" if i < len(redirect_chain) - 1 else "✓"
+                    redirect_html += f"<small>{marker} {redir_url}</small><br>"
+                redirect_html += "</div>"
+            
+            # Show analyzed URL if it was redirected
+            analyzed_url_html = ""
+            if analyzed_url and analyzed_url != url:
+                analyzed_url_html = f"<div class='meta'><strong>Final URL:</strong> <code>{analyzed_url}</code></div>"
 
             result_area.markdown(
                 f"""
@@ -249,7 +266,9 @@ if scan:
                   <div class="card-title">{title}</div>
                   <div class="card-sub">{sub}</div>
                   <div class="meta">URL: <code>{url}</code></div>
+                  {analyzed_url_html}
                   {meta_line}
+                  {redirect_html}
                 </div>
                 """,
                 unsafe_allow_html=True,

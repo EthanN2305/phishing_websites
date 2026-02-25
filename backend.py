@@ -12,7 +12,16 @@ app = Flask(__name__)
 SUSPICIOUS_TLDS = {
     'is', 'tk', 'ga', 'cf', 'ml', 'top', 'xyz', 'gq', 'party',
     'loan', 'click', 'work', 'pw', 'online', 'site', 'space',
-    'trade', 'accountant', 'stream', 'download', 'faith'
+    'trade', 'accountant', 'stream', 'download', 'faith', 'club',
+    'icu', 'date', 'webcam', 'video', 'review', 'buzz', 'fit', 'news'
+}
+
+# Suspicious path keywords that indicate malware/exploits
+SUSPICIOUS_PATH_KEYWORDS = {
+    'exploit', 'malware', 'hack', 'remote', 'payload', 'inject',
+    'keylogger', 'trojan', 'ransomware', 'backdoor', 'shell',
+    'virus', 'worm', '.exe', '.dll', '.scr', '.bat', '.cmd',
+    'admin', 'root', 'crack', 'bypass', 'obfuscate'
 }
 
 # Common brand names that phishers use for spoofing
@@ -82,6 +91,8 @@ def check_suspicious_indicators(url):
     """Check for suspicious patterns that suggest phishing"""
     parsed = urlparse(url)
     hostname = parsed.netloc.lower()
+    path = parsed.path.lower()
+    query = parsed.query.lower()
     
     # Remove port if present
     if ':' in hostname:
@@ -99,6 +110,12 @@ def check_suspicious_indicators(url):
     # Check for suspicious TLD
     if tld in SUSPICIOUS_TLDS:
         return True, f"Suspicious TLD (.{tld})"
+    
+    # Check for suspicious path keywords (exploit, malware, etc.)
+    full_path = path + query
+    for keyword in SUSPICIOUS_PATH_KEYWORDS:
+        if keyword in full_path:
+            return True, f"Suspicious content detected ({keyword})"
     
     # Check for brand spoofing - brand name in domain without being the primary domain
     # E.g., "customers-bank.is" or "mufg-security.tk" are phishing
@@ -197,7 +214,15 @@ def predict():
         
         print(f"  Result: {label.upper()} (confidence={confidence:.4f})")
         print()
-        return jsonify({"label": label, "confidence": confidence})
+        
+        # Build response with redirect chain info if applicable
+        response = {"label": label, "confidence": confidence}
+        if redirect_count > 0:
+            response["redirects"] = redirect_count
+            response["redirect_chain"] = redirect_chain
+            response["analyzed_url"] = final_url
+        
+        return jsonify(response)
     
     except Exception as e:
         print(f"  ERROR: {str(e)}")
