@@ -3,6 +3,8 @@ from sklearn.ensemble import RandomForestClassifier
 import pickle
 from url_extract import get_feature_array
 from urllib.parse import urlparse
+import requests
+from requests.exceptions import RequestException, TooManyRedirects
 
 app = Flask(__name__)
 
@@ -21,6 +23,51 @@ SPOOFED_BRANDS = {
     'airbnb', 'dropbox', 'slack', 'github', 'linkedin', 'twitter',
     'instagram', 'whatsapp', 'telegram', 'discord', 'reddit'
 }
+
+def follow_redirects(url, max_redirects=5):
+    """
+    Follow redirects and return the final URL and redirect count.
+    Returns: (final_url, redirect_count, redirect_chain, error_message)
+    """
+    redirect_chain = [url]
+    
+    try:
+        # Set a low timeout and allow redirects but track them
+        session = requests.Session()
+        
+        # Manually follow redirects to count them
+        current_url = url
+        for i in range(max_redirects + 1):
+            try:
+                # Use HEAD request first (faster, no body download)
+                response = session.head(current_url, timeout=5, allow_redirects=False)
+                
+                # Check if it's a redirect
+                if response.status_code in (301, 302, 303, 307, 308):
+                    next_url = response.headers.get('Location')
+                    if next_url:
+                        # Handle relative redirects
+                        if not next_url.startswith('http'):
+                            base = urlparse(current_url)
+                            if next_url.startswith('/'):
+                                next_url = f"{base.scheme}://{base.netloc}{next_url}"
+                            else:
+                                next_url = f"{base.scheme}://{base.netloc}/{next_url}"
+                        
+                        redirect_chain.append(next_url)
+                        current_url = next_url
+                else:
+                    # No more redirects
+                    return current_url, len(redirect_chain) - 1, redirect_chain, None
+            except RequestException:
+                # Network error, stop following
+                return current_url, len(redirect_chain) - 1, redirect_chain, None
+        
+        # If we get here, too many redirects
+        return current_url, len(redirect_chain) - 1, redirect_chain, "too_many_redirects"
+    
+    except Exception as e:
+        return url, 0, [url], None
 
 # Use the improved 9-feature model
 try:
@@ -77,17 +124,44 @@ def predict():
     url = data.get("url", "")
     
     try:
-        # First check for suspicious indicators
-        is_suspicious, reason = check_suspicious_indicators(url)
+        print(f"\n[SCAN] {url}")
+        
+        # Check for redirects
+        final_url, redirect_count, redirect_chain, redirect_error = follow_redirects(url)
+        
+        if redirect_error == "too_many_redirects":
+            print(f"  ⚠️  Excessive redirects detected ({len(redirect_chain)} in chain)")
+            for i, redir_url in enumerate(redirect_chain[:5]):  # Show first 5
+                print(f"    {i+1}. {redir_url}")
+            if len(redirect_chain) > 5:
+                print(f"    ... ({len(redirect_chain) - 5} more)")
+            print(f"  Result: PHISHING - Link kept redirecting")
+            print()
+            return jsonify({
+                "label": "phishing",
+                "confidence": "N/A",
+                "message": "Link kept redirecting"
+            })
+        
+        if redirect_count > 0:
+            print(f"  ℹ️  URL redirects detected: {redirect_count} redirect(s)")
+            for i, redir_url in enumerate(redirect_chain):
+                marker = "→" if i < len(redirect_chain) - 1 else "✓"
+                print(f"    {marker} {redir_url}")
+            print(f"  Analyzing final URL...")
+            analysis_url = final_url
+        else:
+            analysis_url = url
+        
+        # Check for suspicious indicators on the final URL
+        is_suspicious, reason = check_suspicious_indicators(analysis_url)
         if is_suspicious:
-            print(f"\n[SCAN] {url}")
             print(f"  ⚠️  {reason}")
             print(f"  Result: PHISHING (flagged by pattern detection)")
             print()
             return jsonify({"label": "phishing", "confidence": 0.95, "reason": reason})
         
-        features = get_feature_array(url)
-        print(f"\n[SCAN] {url}")
+        features = get_feature_array(analysis_url)
         print(f"  Feature values:")
         feature_names = ["ip_address", "url_length", "shortening", "at_symbol", 
                         "double_slash", "prefix_suffix", "sub_domain", "port", "https_token"]

@@ -235,6 +235,12 @@ if scan:
             if isinstance(confidence, (int, float)):
                 conf = max(0.0, min(1.0, float(confidence)))
                 conf_text = f"Confidence: {conf * 100:.1f}%"
+            
+            # Build metadata based on whether there's a message
+            if message:
+                meta_line = f"<div class='meta'>{message}</div>"
+            else:
+                meta_line = f"<div class='meta'>{conf_text}</div>" if conf_text else ""
 
             result_area.markdown(
                 f"""
@@ -243,8 +249,7 @@ if scan:
                   <div class="card-title">{title}</div>
                   <div class="card-sub">{sub}</div>
                   <div class="meta">URL: <code>{url}</code></div>
-                  <div class="meta">{conf_text}</div>
-                  <div class="meta">{message or ""}</div>
+                  {meta_line}
                 </div>
                 """,
                 unsafe_allow_html=True,
